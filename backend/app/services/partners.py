@@ -1,6 +1,5 @@
-from fastapi import HTTPException
-
 from app.app_models.dynamodb.partners import Partner, Service, Staffer
+from app.exceptions import NotFoundException
 from app.repositories.partners import PartnersRepository
 from app.schemas.partners import PartnerCreate, PartnerPublic
 
@@ -16,11 +15,10 @@ class PartnersService:
 
     def get_partner(self, partner_id: str) -> PartnerPublic:
         partner = self.partners_repository.get_partner(partner_id)
+
         if not partner:
-            raise HTTPException(
-                status_code=404,
-                detail={"message": f"Partner with id {partner_id} does not exist"},
-            )
+            raise NotFoundException("Partner", partner_id)
+
         return PartnersService.from_model(partner)
 
     @staticmethod

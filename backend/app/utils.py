@@ -121,3 +121,8 @@ def verify_password_reset_token(token: str) -> str | None:
         return str(decoded_token["sub"])
     except InvalidTokenError:
         return None
+
+
+def now_iso_format() -> str:
+    """Returns current moment in ISO format."""
+    return datetime.now(tz=timezone.utc).isoformat()

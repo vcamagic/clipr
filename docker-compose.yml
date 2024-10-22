@@ -1,4 +1,22 @@
 services:
+  dynamodb-local:
+    image: "amazon/dynamodb-local:latest"
+    command: "-jar DynamoDBLocal.jar -sharedDb /data"
+    ports:
+      - "8001:8000"
+    volumes:
+      - dynamodb-data:/data
+
+  dynamodb-admin: 
+    image: "aaronshaf/dynamodb-admin"
+    container_name: dynamodb-admin
+    depends_on:
+      - dynamodb-local
+    restart: always
+    ports:
+      - "8002:8001"
+    environment:
+      - DYNAMO_ENDPOINT=http://dynamodb-local:8000
 
   db:
     image: postgres:12
@@ -164,6 +182,7 @@ services:
       - traefik.http.routers.${STACK_NAME?Variable not set}-frontend-http.middlewares=https-redirect
 volumes:
   app-db-data:
+  dynamodb-data:
 
 networks:
   traefik-public:

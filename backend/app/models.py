@@ -112,3 +112,13 @@ class TokenPayload(SQLModel):
 class NewPassword(SQLModel):
     token: str
     new_password: str = Field(min_length=8, max_length=40)
+
+
+class Partner(SQLModel, table=True):
+    id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
+    name: str = Field(max_length=255)
+    country: str = Field(max_length=50)
+    city: str = Field(max_length=50)
+    address: str = Field(max_length=255)
+    lat: float
+    lon: float

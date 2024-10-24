@@ -1,8 +1,24 @@
+from datetime import time
 from decimal import Decimal
 from enum import Enum
+from typing import Literal
 
 from pydantic import BaseModel, Field
 from ulid import ULID
+
+DaysInWeek = Literal[
+    "monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"
+]
+
+
+class TimeRange(BaseModel):
+    start: time
+    end: time
+
+
+class WorkingHours(BaseModel):
+    day: DaysInWeek
+    shifts: list[TimeRange] = Field(min_length=1)
 
 
 class CurrencyEnum(str, Enum):
@@ -35,6 +51,7 @@ class Staffer(BaseModel):
 class PartnerCreate(BaseModel):
     name: str
     address: Address
+    working_hours: WorkingHours
     services: list[Service] = Field(default_factory=lambda: [])
     staff: list[Staffer] = Field(default_factory=lambda: [])
 

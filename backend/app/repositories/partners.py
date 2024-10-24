@@ -18,7 +18,9 @@ class PartnersRepository:
 
     def create_partner(self, partner: Partner) -> Partner:
         with self.dynamodb_table.batch_writer() as batch_writer:
-            batch_writer.put_item(Item=partner.to_dynamodb_item())
+            batch_writer.put_item(
+                Item=partner.to_dynamodb_item(exclude={"services", "staff"})
+            )
             self._put_children(batch_writer, partner.services)
             self._put_children(batch_writer, partner.staff)
         return partner

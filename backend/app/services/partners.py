@@ -24,7 +24,11 @@ class PartnersService:
     @staticmethod
     def to_model(partner_in: PartnerCreate) -> Partner:
         partner = Partner.model_validate(
-            {"name": partner_in.name, "address": partner_in.address.model_dump()}
+            {
+                "name": partner_in.name,
+                "address": partner_in.address.model_dump(),
+                "working_hours": partner_in.working_hours,
+            }
         )
         partner.services = [
             Service(**service.model_dump(), partner_id=partner.id)

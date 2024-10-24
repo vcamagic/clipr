@@ -1,8 +1,10 @@
 from abc import ABC
+from datetime import time
 from decimal import Decimal
 from enum import Enum
-from typing import Any, ClassVar
+from typing import Any, ClassVar, Literal
 
+from fastapi.types import IncEx
 from pydantic import BaseModel, Field
 from ulid import ULID
 
@@ -12,6 +14,20 @@ from app.app_models.dynamodb.base import (
     get_id,
     normalize_string,
 )
+
+DaysInWeek = Literal[
+    "monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"
+]
+
+
+class TimeRange(BaseModel):
+    start: time
+    end: time
+
+
+class WorkingHours(BaseModel):
+    day: DaysInWeek
+    shifts: list[TimeRange] = Field(min_length=1)
 
 
 class CurrencyEnum(str, Enum):
@@ -40,15 +56,16 @@ class PartnerChild(BaseItem, ABC):
     def pk(self) -> str:
         return f"{self.parent_entity}#{self.partner_id}"
 
-    def to_dynamodb_item(self) -> dict[str, Any]:
-        item = super().to_dynamodb_item()
+    def to_dynamodb_item(self, exclude: IncEx | None = None) -> dict[str, Any]:
+        item = super().to_dynamodb_item(exclude=exclude)
         item.update({"id": str(self.id), "partner_id": str(self.partner_id)})
         return item
 
     def to_update_expression(self) -> UpdateExpression:
         return super().to_update_expression()
 
-    def from_dynamodb_item(self, item: dict[str, Any]) -> BaseItem:
+    @classmethod
+    def from_dynamodb_item(cls, item: dict[str, Any]) -> BaseItem:
         return super().from_dynamodb_item(item)
 
 
@@ -80,6 +97,7 @@ class Partner(BaseItem):
     name: str = Field(max_length=50)
     is_active: bool = Field(default_factory=lambda: True)
     address: Address
+    working_hours: WorkingHours
 
     services: list[Service] = Field(default_factory=lambda: [])
     staff: list[Staffer] = Field(default_factory=lambda: [])
@@ -99,10 +117,8 @@ class Partner(BaseItem):
     def gsi_sk(self) -> str:
         return f"{self.entity_type}#{normalize_string(self.name)}"
 
-    def to_dynamodb_item(self) -> dict[str, Any]:
-        item = super().to_dynamodb_item()
-        del item["services"]
-        del item["staff"]
+    def to_dynamodb_item(self, exclude: IncEx | None = None) -> dict[str, Any]:
+        item = super().to_dynamodb_item(exclude)
         item.update(
             {
                 "id": str(self.id),
@@ -114,5 +130,6 @@ class Partner(BaseItem):
     def to_update_expression(self) -> UpdateExpression:
         return super().to_update_expression()
 
-    def from_dynamodb_item(self, item: dict[str, Any]) -> BaseItem:
+    @classmethod
+    def from_dynamodb_item(cls, item: dict[str, Any]) -> BaseItem:
         return super().from_dynamodb_item(item)

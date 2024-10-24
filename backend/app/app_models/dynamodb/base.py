@@ -1,7 +1,8 @@
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
-from typing import Any, ClassVar
+from typing import Any, ClassVar, TypeVar
 
+from fastapi.types import IncEx
 from pydantic import BaseModel
 from ulid import ULID
 
@@ -48,19 +49,20 @@ class BaseItem(BaseModel, ABC):
         raise NotImplementedError
 
     @abstractmethod
-    def to_dynamodb_item(self) -> dict[str, Any]:
+    def to_dynamodb_item(self, exclude: IncEx | None = None) -> dict[str, Any]:
         """Converts model to a DynamoDb compatible dict."""
         return {
             "pk": self.pk,
             "sk": self.sk,
             "item_type": self.entity_type,
-            **self.model_dump(),
+            **self.model_dump(exclude=exclude),
         }
 
+    @classmethod
     @abstractmethod
-    def from_dynamodb_item(self, item: dict[str, Any]) -> "BaseItem":
+    def from_dynamodb_item(cls, item: dict[str, Any]) -> "BaseItem":
         """Converts Dynamodb item to app class model."""
-        return self.model_validate(item)
+        return cls.model_validate(item)
 
     @abstractmethod
     def to_update_expression(self) -> UpdateExpression:

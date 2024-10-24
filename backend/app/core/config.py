@@ -60,8 +60,8 @@ class Settings(BaseSettings):
     AWS_ACCESS_KEY_ID: str
     AWS_SECRET_ACCESS_KEY: str
     AWS_SESSION_TOKEN: str
-    DYNAMODB_URL : str
-    DYNAMODB_TABLE_NAME : str
+    DYNAMODB_URL: str
+    DYNAMODB_TABLE_NAME: str
 
     @computed_field  # type: ignore[prop-decorator]
     @property

@@ -37,7 +37,7 @@ async def get_boto3_session() -> boto3.Session:
             region_name=settings.AWS_REGION,
             aws_access_key_id=settings.AWS_ACCESS_KEY_ID,
             aws_secret_access_key=settings.AWS_SECRET_ACCESS_KEY,
-            aws_session_token=settings.AWS_SESSION_TOKEN
+            aws_session_token=settings.AWS_SESSION_TOKEN,
         )
 
     return boto3.Session(region_name=settings.AWS_REGION)

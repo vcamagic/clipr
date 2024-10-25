@@ -6,7 +6,7 @@ from fastapi.types import IncEx
 from pydantic import BaseModel
 from ulid import ULID
 
-from app.utils import now_iso_format
+from app.utils.utils import now_iso_format
 
 
 @dataclass

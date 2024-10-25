@@ -91,7 +91,7 @@ class BaseItem(BaseModel, ABC):
 
 
 def get_id() -> ULID:
-    return ULID()
+    return str(ULID())
 
 
 def normalize_string(value: str) -> str:

@@ -1,7 +1,7 @@
 from datetime import time
 from decimal import Decimal
 from enum import Enum
-from typing import Literal
+from typing import Any, Literal
 
 from pydantic import BaseModel, Field
 from ulid import ULID
@@ -51,9 +51,26 @@ class Staffer(BaseModel):
 class PartnerCreate(BaseModel):
     name: str
     address: Address
-    working_hours: WorkingHours
+    working_hours: list[WorkingHours]
     services: list[Service] = Field(default_factory=lambda: [])
     staff: list[Staffer] = Field(default_factory=lambda: [])
+
+    def model_dump(self, *args, **kwargs) -> dict[str, Any]:
+        model_dump = super().model_dump(exclude={"services", "staff"})
+
+        return {
+            **model_dump,
+            "working_hours": [
+                {
+                    "day": working_day.day,
+                    "shifts": [
+                        {"start": str(shift.start), "end": str(shift.end)}
+                        for shift in working_day.shifts
+                    ],
+                }
+                for working_day in self.working_hours
+            ],
+        }
 
 
 class PartnerPublic(PartnerCreate):

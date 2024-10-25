@@ -13,9 +13,7 @@ from sqlmodel import Session
 from app.core import security
 from app.core.config import settings
 from app.core.db import engine
-from app.models import TokenPayload, User
-from app.repositories.partners import PartnersRepository
-from app.services.partners import PartnersService
+from app.models.sql.models import TokenPayload, User
 
 reusable_oauth2 = OAuth2PasswordBearer(
     tokenUrl=f"{settings.API_V1_STR}/login/access-token"
@@ -91,21 +89,3 @@ def get_current_active_superuser(current_user: CurrentUser) -> User:
 
 
 CurrentSuperUser = Annotated[User, Depends(get_current_active_superuser)]
-
-
-def get_partners_repository(
-    session: SessionDep, dynamodb_service_resource: DynamoDbServiceResourceDep
-) -> PartnersRepository:
-    return PartnersRepository(
-        session=session, dynamodb_resource=dynamodb_service_resource
-    )
-
-
-PartnersRepositoryDep = Annotated[PartnersRepository, Depends(get_partners_repository)]
-
-
-def get_partners_service(partners_repository: PartnersRepositoryDep) -> PartnersService:
-    return PartnersService(partners_repository=partners_repository)
-
-
-PartnersServiceDep = Annotated[PartnersService, Depends(get_partners_service)]

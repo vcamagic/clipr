@@ -1,5 +1,4 @@
 from abc import ABC
-from datetime import time
 from decimal import Decimal
 from enum import Enum
 from typing import Any, ClassVar, Literal
@@ -8,7 +7,7 @@ from fastapi.types import IncEx
 from pydantic import BaseModel, Field
 from ulid import ULID
 
-from app.app_models.dynamodb.base import (
+from app.models.dynamodb.base import (
     BaseItem,
     UpdateExpression,
     get_id,
@@ -21,8 +20,8 @@ DaysInWeek = Literal[
 
 
 class TimeRange(BaseModel):
-    start: time
-    end: time
+    start: str
+    end: str
 
 
 class WorkingHours(BaseModel):
@@ -47,8 +46,8 @@ class Address(BaseModel):
 
 
 class PartnerChild(BaseItem, ABC):
-    id: ULID = Field(default_factory=get_id)
-    partner_id: ULID
+    id: str = Field(default_factory=get_id)
+    partner_id: str
 
     parent_entity: ClassVar[str] = "PARTNER"
 
@@ -93,11 +92,11 @@ class Staffer(PartnerChild):
 
 
 class Partner(BaseItem):
-    id: ULID = Field(default_factory=get_id)
+    id: str = Field(default_factory=get_id)
     name: str = Field(max_length=50)
     is_active: bool = Field(default_factory=lambda: True)
     address: Address
-    working_hours: WorkingHours
+    working_hours: list[WorkingHours]
 
     services: list[Service] = Field(default_factory=lambda: [])
     staff: list[Staffer] = Field(default_factory=lambda: [])

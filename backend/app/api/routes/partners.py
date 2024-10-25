@@ -1,6 +1,11 @@
 from fastapi import APIRouter, status
 
-from app.api.deps import CurrentSuperUser, CurrentUser, PartnersServiceDep
+from app.api.deps import (
+    CurrentSuperUser,
+    CurrentUser,
+    DynamoDbServiceResourceDep,
+)
+from app.crud import partner as partner_crud
 from app.schemas.partners import PartnerCreate, PartnerPublic
 
 router = APIRouter()
@@ -10,9 +15,9 @@ router = APIRouter()
 def crate_partner(
     _: CurrentSuperUser,
     partner_in: PartnerCreate,
-    partners_service: PartnersServiceDep,
+    dynamodb_service_resource: DynamoDbServiceResourceDep,
 ):
-    return partners_service.create_partner(partner_in)
+    return partner_crud.create_partner(dynamodb_service_resource, partner_in)
 
 
 @router.get(
@@ -21,6 +26,6 @@ def crate_partner(
 def get_partner(
     _: CurrentUser,
     partner_id: str,
-    partners_service: PartnersServiceDep,
+    dynamodb_service_resource: DynamoDbServiceResourceDep,
 ):
-    return partners_service.get_partner(partner_id)
+    return partner_crud.get_partner(dynamodb_service_resource, partner_id)

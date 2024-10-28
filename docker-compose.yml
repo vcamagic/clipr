@@ -1,4 +1,17 @@
 services:
+  cognito-local:
+    image: jagregory/cognito-local:latest
+    ports:
+      - "9229:9229"
+    environment:
+      - COGNITO_LOCAL_PORT=9229
+      - COGNITO_LOCAL_DB_PATH=/tmp/cognito-local.db
+    networks:
+      - traefik-public
+      - default
+    volumes:
+      - cognito-data:/tmp
+
   dynamodb-local:
     image: "amazon/dynamodb-local:latest"
     command: "-jar DynamoDBLocal.jar -sharedDb /data"
@@ -7,7 +20,7 @@ services:
     volumes:
       - dynamodb-data:/data
 
-  dynamodb-admin: 
+  dynamodb-admin:
     image: "aaronshaf/dynamodb-admin"
     container_name: dynamodb-admin
     depends_on:
@@ -71,6 +84,8 @@ services:
       db:
         condition: service_healthy
         restart: true
+      cognito-local:
+        condition: service_started
     command: bash scripts/prestart.sh
     env_file:
       - .env
@@ -183,6 +198,7 @@ services:
 volumes:
   app-db-data:
   dynamodb-data:
+  cognito-data:
 
 networks:
   traefik-public:

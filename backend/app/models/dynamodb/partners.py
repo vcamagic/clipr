@@ -5,7 +5,6 @@ from typing import Any, ClassVar, Literal
 
 from fastapi.types import IncEx
 from pydantic import BaseModel, Field
-from ulid import ULID
 
 from app.models.dynamodb.base import (
     BaseItem,

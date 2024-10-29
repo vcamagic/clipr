@@ -6,6 +6,7 @@ import jwt
 from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
 from jwt.exceptions import InvalidTokenError
+from mypy_boto3_cognito_idp import CognitoIdentityProviderClient
 from mypy_boto3_dynamodb import DynamoDBServiceResource
 from pydantic import ValidationError
 from sqlmodel import Session
@@ -32,13 +33,13 @@ TokenDep = Annotated[str, Depends(reusable_oauth2)]
 async def get_boto3_session() -> boto3.Session:
     if settings.ENVIRONMENT == "local":
         return boto3.Session(
-            region_name=settings.AWS_REGION,
+            region_name=settings.REGION_NAME,
             aws_access_key_id=settings.AWS_ACCESS_KEY_ID,
             aws_secret_access_key=settings.AWS_SECRET_ACCESS_KEY,
             aws_session_token=settings.AWS_SESSION_TOKEN,
         )
 
-    return boto3.Session(region_name=settings.AWS_REGION)
+    return boto3.Session(region_name=settings.REGION_NAME)
 
 
 Boto3SessionDep = Annotated[boto3.Session, Depends(get_boto3_session)]
@@ -55,6 +56,24 @@ async def get_dynamodb_service_resource(
 
 DynamoDbServiceResourceDep = Annotated[
     DynamoDBServiceResource, Depends(get_dynamodb_service_resource)
+]
+
+
+async def get_cognito_idp_client(
+    boto3_session: Boto3SessionDep,
+) -> CognitoIdentityProviderClient:
+    if settings.ENVIRONMENT == "local":
+        return boto3_session.client(
+            "cognito-idp",
+            region_name=settings.REGION_NAME,
+            endpoint_url=settings.COGNITO_IDP_LOCAL_URL,
+        )
+
+    return boto3_session.client("cognito-idp", region_name=settings.REGION_NAME)
+
+
+CognitoIdpClientDep = Annotated[
+    CognitoIdentityProviderClient, Depends(get_cognito_idp_client)
 ]
 
 

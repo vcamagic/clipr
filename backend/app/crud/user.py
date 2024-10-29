@@ -1,9 +1,13 @@
 import uuid
 from typing import Any
 
+import boto3
+import boto3.exceptions
+from mypy_boto3_cognito_idp import CognitoIdentityProviderClient
 from sqlmodel import Session, select
 
-from app.core.security import get_password_hash, verify_password
+from app.core.config import settings
+from app.core.security import get_password_hash
 from app.models.sql.models import Item, ItemCreate, User, UserCreate, UserUpdate
 
 
@@ -37,13 +41,22 @@ def get_user_by_email(*, session: Session, email: str) -> User | None:
     return session_user
 
 
-def authenticate(*, session: Session, email: str, password: str) -> User | None:
-    db_user = get_user_by_email(session=session, email=email)
-    if not db_user:
+def authenticate(
+    *, cognito_idp_client: CognitoIdentityProviderClient, email: str, password: str
+) -> str | None:
+    try:
+        initiate_auth_response = cognito_idp_client.initiate_auth(
+            AuthFlow="USER_PASSWORD_AUTH",
+            ClientId=settings.CLIENT_ID,
+            AuthParameters={
+                "USERNAME": email,
+                "PASSWORD": password,
+            },
+        )
+        return initiate_auth_response["AuthenticationResult"].get("AccessToken", "")
+    except boto3.exceptions.Boto3Error as error:
+        print(f"Auth not successful: {error}")
         return None
-    if not verify_password(password, db_user.hashed_password):
-        return None
-    return db_user
 
 
 def create_item(*, session: Session, item_in: ItemCreate, owner_id: uuid.UUID) -> Item:

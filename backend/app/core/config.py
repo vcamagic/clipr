@@ -65,6 +65,8 @@ class Settings(BaseSettings):
     COGNITO_IDP_LOCAL_URL: str
     USER_POOL_NAME: str
     USER_POOL_CLIENT_NAME: str
+    USER_POOL_ID: str
+    CLIENT_ID: str
 
     @computed_field  # type: ignore[prop-decorator]
     @property

@@ -11,11 +11,11 @@ logger = logging.getLogger(__name__)
 if settings.ENVIRONMENT == "local":
     cognito_client = client(
         "cognito-idp",
-        region_name=settings.AWS_REGION,
-        endpoint_url=settings.COGNITO_IDP_LOCAL_URL,
+        region_name=settings.REGION_NAME,
+        endpoint_url="http://cognito-local:9229",
     )
 else:
-    cognito_client = client("cognito-idp", region_name=settings.AWS_REGION)
+    cognito_client = client("cognito-idp", region_name=settings.REGION_NAME)
 
 
 def main() -> None:

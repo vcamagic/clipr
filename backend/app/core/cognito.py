@@ -9,6 +9,13 @@ from app.core.config import settings
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
+TEMP_PASSWORD = "G#7x!Kqv2P%Zj9&LnB"
+PERMANENT_PASSWORD = "Bb7x!Kqv2P%Zj9&LnB"
+
+def create_user_pool():
+    
+
+
 
 def init_cognito(cognito_client: CognitoIdentityProviderClient):
     response = cognito_client.list_user_pools(MaxResults=1)
@@ -65,5 +72,32 @@ def init_cognito(cognito_client: CognitoIdentityProviderClient):
         )
         client_id = response.get("UserPoolClient", {}).get("ClientId", "")
         os.environ["USER_POOL_CLIENT_ID"] = client_id
+
+        cognito_client.admin_create_user(
+            UserPoolId=user_pool_id,
+            Username=settings.EMAIL_TEST_USER,
+            UserAttributes=[
+                {"Name": "email_verified", "Value": "true"},
+                {"Name": "email", "Value": settings.EMAIL_TEST_USER},
+            ],
+            MessageAction="SUPPRESS",
+            TemporaryPassword=TEMP_PASSWORD
+        )
+        response = cognito_client.initiate_auth(
+            AuthFlow="USER_PASSWORD_AUTH",
+            ClientId=client_id,
+            AuthParameters={"USERNAME": settings.EMAIL_TEST_USER, "PASSWORD": TEMP_PASSWORD},
+        )
+        session = response["Session"]
+        response = cognito_client.respond_to_auth_challenge(
+            ClientId=client_id,
+            ChallengeName="NEW_PASSWORD_REQUIRED",
+            Session=session,
+            ChallengeResponses={
+                "USERNAME": settings.EMAIL_TEST_USER,
+                "NEW_PASSWORD": PERMANENT_PASSWORD,
+            },
+        )
+        logger.info(f"User confirmed: {response}")
     except Boto3Error as e:
         logger.error(f"Failed to create user pool: {e}")

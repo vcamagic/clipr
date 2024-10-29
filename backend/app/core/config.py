@@ -56,10 +56,10 @@ class Settings(BaseSettings):
     POSTGRES_PASSWORD: str = ""
     POSTGRES_DB: str = ""
 
-    AWS_REGION: str
-    # AWS_ACCESS_KEY_ID: str
-    # AWS_SECRET_ACCESS_KEY: str
-    # AWS_SESSION_TOKEN: str
+    REGION_NAME: str
+    AWS_ACCESS_KEY_ID: str
+    AWS_SECRET_ACCESS_KEY: str
+    AWS_SESSION_TOKEN: str
     DYNAMODB_URL: str
     DYNAMODB_TABLE_NAME: str
     COGNITO_IDP_LOCAL_URL: str
